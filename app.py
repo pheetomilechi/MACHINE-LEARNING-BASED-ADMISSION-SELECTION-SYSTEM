@@ -1,6 +1,7 @@
 """Web interface for the ML based admission selection system."""
 
 from pathlib import Path
+import os
 
 import joblib
 import pandas as pd
@@ -87,4 +88,4 @@ def index():
 
 
 if __name__ == "__main__":
-    serve(app, host="0.0.0.0", port=5000)
+    serve(app, host="0.0.0.0", port=int(os.environ.get("PORT", "5000")))

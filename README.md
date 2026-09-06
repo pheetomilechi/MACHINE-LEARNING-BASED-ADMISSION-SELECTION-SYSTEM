@@ -1,53 +1,59 @@
-# Admissions Web App
+# ML Admission Selection System
 
-A browser-based UI for the ML Based Admission Selection System, built with Flask.
+A Flask web application that loads the trained scikit-learn pipeline and evaluates admission candidates.
 
-## Folder structure
-```
-webapp/
-├── app.py                 # Flask backend (loads trained_model.pkl, serves /evaluate API)
-├── trained_model.pkl      # Trained pipeline (copy the latest one from train_model.py here if you retrain)
-├── templates/
-│   └── index.html         # The evaluation form page
-└── static/
-    ├── style.css          # Letterhead / ledger / stamp design
-    └── script.js          # Submits the form via fetch() and animates the result stamp
-```
+## Run locally
 
-## Setup
-
-```bash
-pip install flask joblib pandas scikit-learn
-```
-
-## Run
-
-```bash
-cd webapp
+```powershell
+python -m pip install -r requirements.txt
 python app.py
 ```
 
-Then open **http://127.0.0.1:5000** in your browser.
+Open http://127.0.0.1:5000.
 
-## How it works
-- The form on the page collects the same fields the model was trained on (age, UTME
-  score, post-UTME score, O'level points, subject relevance, interview score,
-  catchment category, course choice).
-- On "Evaluate candidate", the page sends the data as JSON to `POST /evaluate`.
-- The Flask backend validates the input, runs it through the saved scikit-learn
-  pipeline, and returns `{admitted, confidence, model_name}`.
-- The page displays the verdict as an animated stamp — green "Admitted" or
-  rust "Not Admitted" — with the model's confidence percentage.
+For local production-style serving with Gunicorn on Linux/macOS:
+
+```bash
+gunicorn --workers 2 --bind 0.0.0.0:5000 app:app
+```
+
+On Windows, the entry point uses Waitress:
+
+```powershell
+python app.py
+```
+
+## Deploy on Render
+
+1. Push this entire project folder to a GitHub repository. Make sure `trained_model.pkl`, `templates/`, and `static/` are committed. Do not commit passwords, API keys, or other secrets.
+2. In the Render dashboard, select **New +** -> **Web Service**.
+3. Connect the GitHub repository and choose the branch to deploy.
+4. Use these settings:
+
+   - **Runtime:** `Python 3`
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `gunicorn --workers 2 --bind 0.0.0.0:$PORT app:app`
+   - **Instance type:** `Free` for a demo, or a paid instance for production use
+
+5. Click **Create Web Service**. Render installs the dependencies, starts Gunicorn, and provides a public `.onrender.com` URL.
+
+The application reads Render's `PORT` environment variable automatically. The `trained_model.pkl` file is loaded from the project directory, so it must be present in the repository or supplied through a separate model-storage workflow.
 
 ## Updating the model
-If you retrain the model (`python train_model.py` in the parent folder), copy the new
-`trained_model.pkl` into this `webapp/` folder and restart the Flask app.
 
-## Deploying beyond localhost
-The built-in Flask server (`app.run(...)`) is for development only. For a real
-deployment, run it behind a production WSGI server such as **gunicorn** or **waitress**,
-e.g.:
-```bash
-pip install gunicorn
-gunicorn -w 2 -b 0.0.0.0:8000 app:app
+Run the training script locally:
+
+```powershell
+python train_model.py
 ```
+
+Commit and push the updated `trained_model.pkl`. Render will redeploy automatically if auto-deploy is enabled.
+
+## Project files
+
+- `app.py` - Flask application and server entry point
+- `trained_model.pkl` - saved preprocessing pipeline and classifier
+- `templates/index.html` - candidate evaluation page
+- `static/styles.css` - responsive web styling
+- `train_model.py` - model training and evaluation
+- `requirements.txt` - Python dependencies
