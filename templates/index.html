@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admissions Desk | Candidate evaluation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar"><a class="brand" href="/" aria-label="Admissions Desk home"><span class="brand-mark">AD</span><span><strong>Admissions Desk</strong><small>ML selection system</small></span></a><div class="model-pill"><span class="status-dot"></span>{{ model_name }}</div></header>
+    <main class="workspace">
+      <section class="intro"><p class="eyebrow">Candidate review / 01</p><h1>Make the next<br><em>decision</em> count.</h1><p class="lede">Evaluate a candidate against the trained admission model and get a clear recommendation in seconds.</p><div class="metric-row"><div><strong>08</strong><span>candidate signals</span></div><div><strong>02</strong><span>decision outcomes</span></div><div><strong>24/7</strong><span>ready to assess</span></div></div></section>
+      <section class="panel" aria-labelledby="form-title"><div class="panel-heading"><div><p class="eyebrow">Admission profile</p><h2 id="form-title">Candidate details</h2></div><span class="step-count">01 / 01</span></div>
+        {% if errors %}<div class="alert" role="alert">{% for error in errors %}<span>{{ error }}</span>{% endfor %}</div>{% endif %}
+        <form method="post"><div class="field-grid">
+          <label>Age<input name="age" type="number" min="14" max="60" step="1" value="{{ values.age }}" required><small>14 - 60 years</small></label>
+          <label>UTME / JAMB score<input name="utme_score" type="number" min="0" max="400" step="1" value="{{ values.utme_score }}" required><small>Maximum 400</small></label>
+          <label>Post-UTME score<input name="post_utme_score" type="number" min="0" max="100" step="0.1" value="{{ values.post_utme_score }}" required><small>Maximum 100</small></label>
+          <label>O'level points<input name="olevel_points" type="number" min="0" max="45" step="1" value="{{ values.olevel_points }}" required><small>Best five subjects</small></label>
+          <label>Subject relevance<input name="subject_relevance" type="number" min="0" max="1" step="0.01" value="{{ values.subject_relevance }}" required><small>0.00 - 1.00</small></label>
+          <label>Interview score<input name="interview_score" type="number" min="0" max="100" step="0.1" value="{{ values.interview_score }}" required><small>Maximum 100</small></label>
+          <label>Catchment category<select name="catchment_category">{% for option in ['Catchment', 'Non-Catchment', 'ELDS'] %}<option {% if values.catchment_category == option %}selected{% endif %}>{{ option }}</option>{% endfor %}</select><small>Admission consideration</small></label>
+          <label>Course choice<select name="course_choice">{% for option in ['First Choice', 'Second Choice'] %}<option {% if values.course_choice == option %}selected{% endif %}>{{ option }}</option>{% endfor %}</select><small>Candidate preference</small></label>
+        </div><button type="submit">Evaluate candidate <span>-></span></button></form>
+      </section>
+      <aside class="decision-column">{% if result %}<section class="result-card {% if result.admitted %}positive{% else %}negative{% endif %}"><div class="result-top"><span class="eyebrow">Model recommendation</span><span class="result-icon">{% if result.admitted %}+{% else %}-{% endif %}</span></div><h2>{% if result.admitted %}Admitted{% else %}Not admitted{% endif %}</h2><p>{% if result.admitted %}This profile meets the model's admission threshold.{% else %}This profile falls below the model's admission threshold.{% endif %}</p><div class="confidence"><div class="confidence-label"><span>{% if result.admitted %}Confidence{% else %}Admission likelihood{% endif %}</span><strong>{{ '%.1f'|format(result.percentage) }}%</strong></div><div class="bar"><span style="width: {{ result.percentage }}%"></span></div></div></section>{% else %}<section class="empty-card"><span class="result-icon">+</span><p>Recommendation<br><strong>appears here</strong></p><span class="empty-line"></span></section>{% endif %}
+        <section class="info-card"><div class="info-heading"><span>i</span><strong>Model context</strong></div><p>The recommendation combines academic performance, subject fit, interview assessment, catchment category, and course preference.</p><div class="divider"></div><div class="info-meta"><span>Pipeline</span><strong>{{ model_name }}</strong></div><div class="info-meta"><span>Status</span><strong class="ready">{% if model_ready %}Ready{% else %}Unavailable{% endif %}</strong></div></section></aside>
+    </main><footer><span>Admissions Desk</span><span>Decision support tool / v1.0</span></footer>
+  </div>
+</body>
+</html>
